@@ -1,83 +1,35 @@
-# ActionHub V2.1
+# KOICA ActionHub — Professional Interface
 
-Unofficial participant-built prototype developed during the KOICA Youth Leaders Program 2026–2027.
+A participant innovation for the KOICA Youth Leaders Program 2026–2027.
 
-## Improvements in V2.1
-- Real SVG flags for Cameroon, Côte d'Ivoire, Ghana, Nigeria and Senegal (works on Windows)
-- Full participant name and full country names
-- English / French / Korean navigation
-- Clear DEMO DATA / LIVE BACKEND indicator
-- Prototype-data disclaimer
-- Participant account creation, sign-in and sign-out
-- Coordinator Dashboard hidden and restricted for ordinary participants
-- Cross-country Action Plan discovery
-- 90-Day Challenge
-- Evidence uploads with private Supabase Storage support
-- Feedback form
-- Real AI Action Plan Coach endpoint using OpenAI Responses API
-- Footer identifying the prototype as participant-built
+## Design direction
+This version deliberately avoids the generic “AI dashboard” look. It uses:
+- a formal institutional white masthead;
+- KOICA-blue primary navigation and communication accents;
+- editorial information hierarchy instead of floating card grids;
+- a five-country network ribbon;
+- a 90-day implementation timeline;
+- a field-journal metaphor for evidence;
+- a conversation-led AI coach;
+- a programme oversight view focused on follow-up and support.
 
-## Deploy to your existing GitHub/Vercel project
-Replace the files in your `actionhub-prototype` repository with all files from this package.
+The interface is inspired by KOICA’s external communication approach: clear public-service hierarchy, KOICA Blue, open communication, collaboration and professional support.
 
-Important: upload the complete `assets/flags/` and `api/` folders.
+## Deploy
+Replace the files in your existing `actionhub-prototype` GitHub repository with everything in this package, including the `assets/` and `api/` folders. Commit to `main`; Vercel should redeploy automatically.
 
-Expected structure:
-
-```
-index.html
-styles.css
-app.js
-config.js
-README.md
-supabase-schema.sql
-api/
-  coach.js
-assets/
-  flags/
-    cameroon.svg
-    cote-divoire.svg
-    ghana.svg
-    nigeria.svg
-    senegal.svg
-```
-
-Commit to the `main` branch. Vercel should redeploy automatically.
-
-## Activate real AI Coach
-In Vercel:
-1. Project → Settings → Environment Variables
-2. Add `OPENAI_API_KEY`
-3. Optional: add `OPENAI_MODEL` (default is `gpt-5.6-luna`)
-4. Redeploy
-
-Never place an OpenAI API key in browser files.
-
-## Activate real accounts, shared data and file uploads
+## Supabase
+The site works in demo mode without Supabase. Later:
 1. Create a Supabase project.
-2. Open SQL Editor and run `supabase-schema.sql`.
+2. Run `supabase-schema.sql`.
 3. Enable Email authentication.
-4. Copy your Supabase Project URL and anon/public key.
-5. Edit `config.js`:
+4. Add the Project URL and anon/public key to `config.js`.
+5. Commit and redeploy.
 
-```js
-window.ACTIONHUB_CONFIG={
-  SUPABASE_URL:"https://YOUR-PROJECT.supabase.co",
-  SUPABASE_ANON_KEY:"YOUR-ANON-KEY"
-};
-```
+## AI Coach
+The coach has a local fallback. For the real AI endpoint, add `OPENAI_API_KEY` in Vercel Environment Variables and redeploy. Optionally set `OPENAI_MODEL`.
 
-6. Commit the change to GitHub.
-7. To make a user a coordinator, change their `profiles.role` to `coordinator` in Supabase. Participants cannot self-assign coordinator rights in real mode.
+Never expose a secret API key inside `index.html`, `app.js`, or `config.js`.
 
-## Recommended demo flow
-1. Open Dashboard and show the five country flags.
-2. Change English → Français → 한국어.
-3. Open Cross-country Plans.
-4. Open SmartDry Cameroon.
-5. Ask the AI Action Plan Coach for a 90-day plan.
-6. Mark a milestone complete.
-7. Upload evidence.
-8. Send feedback.
-9. Switch to Coordinator in demo mode and show the restricted dashboard.
-10. Explain how Supabase turns demo data into real shared cohort data.
+## Branding
+This package uses the name **KOICA ActionHub** and a custom ActionHub mark designed for the platform. The mark is not the KOICA Authority Mark. If KOICA provides the official Communication Mark asset for this platform, it can replace or sit alongside `assets/actionhub-mark.svg`.

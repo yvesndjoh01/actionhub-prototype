@@ -2,258 +2,116 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ActionHub V2.1</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#005BAC">
+  <title>KOICA ActionHub · Youth Leaders Program</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<div class="shell">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="logo">AH</div>
-      <div>
-        <div class="brand-name">ActionHub <span>V2.1</span></div>
-        <div class="brand-sub" data-i18n="unofficial">Unofficial participant-built prototype</div>
+<div class="app">
+  <header class="institutional-header">
+    <div class="header-inner">
+      <button class="brand-lockup" onclick="showView('dashboard')" aria-label="KOICA ActionHub home">
+        <img src="assets/actionhub-mark.svg" alt="">
+        <span class="brand-copy">
+          <b><em>KOICA</em> ActionHub</b>
+          <small data-i18n="programName">Youth Leaders Program · West Africa 2026–2027</small>
+        </span>
+      </button>
+      <div class="header-tools">
+        <span id="data-mode" class="data-state demo">DEMO DATA</span>
+        <label class="language-select"><span>Language</span><select id="language"><option value="en">English</option><option value="fr">Français</option><option value="ko">한국어</option></select></label>
+        <button class="profile-chip" onclick="openLogin()"><span class="avatar" id="avatar">YF</span><span><b id="profile-name">Yves Frederic Ndjoh</b><small id="profile-meta">Cameroon · Participant</small></span></button>
       </div>
     </div>
+  </header>
 
-    <div class="flag-strip">
-      <img src="assets/flags/cameroon.svg" title="Cameroon" alt="Cameroon">
-      <img src="assets/flags/cote-divoire.svg" title="Côte d'Ivoire" alt="Côte d'Ivoire">
-      <img src="assets/flags/ghana.svg" title="Ghana" alt="Ghana">
-      <img src="assets/flags/nigeria.svg" title="Nigeria" alt="Nigeria">
-      <img src="assets/flags/senegal.svg" title="Senegal" alt="Senegal">
+  <nav class="primary-nav">
+    <div class="nav-inner">
+      <button class="nav-item active" data-view="dashboard"><span>01</span><b data-i18n="dashboard">Overview</b></button>
+      <button class="nav-item" data-view="plans"><span>02</span><b data-i18n="plans">Country Network</b></button>
+      <button class="nav-item" data-view="myplan"><span>03</span><b data-i18n="myPlan">My Action Plan</b></button>
+      <button class="nav-item" data-view="coach"><span>04</span><b data-i18n="aiCoach">AI Coach</b></button>
+      <button class="nav-item" data-view="challenge"><span>05</span><b data-i18n="challenge">90-Day Mission</b></button>
+      <button class="nav-item" data-view="evidence"><span>06</span><b data-i18n="evidence">Field Journal</b></button>
+      <button class="nav-item coordinator-only" data-view="coordinator"><span>07</span><b data-i18n="coordinator">Programme Oversight</b></button>
     </div>
+  </nav>
 
-    <nav>
-      <button class="nav active" data-view="dashboard">▦ <span data-i18n="dashboard">Dashboard</span></button>
-      <button class="nav" data-view="plans">▤ <span data-i18n="plans">Cross-country Plans</span></button>
-      <button class="nav" data-view="myplan">✎ <span data-i18n="myPlan">My Action Plan</span></button>
-      <button class="nav" data-view="coach">✦ <span data-i18n="aiCoach">AI Action Plan Coach</span></button>
-      <button class="nav" data-view="challenge">◎ <span data-i18n="challenge">90-Day Challenge</span></button>
-      <button class="nav" data-view="evidence">⇧ <span data-i18n="evidence">Evidence Uploads</span></button>
-      <button class="nav coordinator-only" data-view="coordinator">◈ <span data-i18n="coordinator">Coordinator Dashboard</span></button>
-    </nav>
-
-    <div class="side-user">
-      <strong id="side-name">Yves Frederic Ndjoh</strong>
-      <span id="side-role">Cameroon · Participant</span>
-      <button class="outline" onclick="openLogin()" data-i18n="login">Login / Switch role</button>
-      <button class="outline" onclick="openFeedback()" data-i18n="feedback">Send Feedback</button>
-    </div>
-  </aside>
-
-  <main>
-    <header class="topbar">
-      <div>
-        <h1 id="page-title" data-i18n="dashboard">Dashboard</h1>
-        <p id="page-subtitle" data-i18n="tagline">From learning to action. From action to measurable impact.</p>
-      </div>
-      <div class="top-actions">
-        <span id="data-mode" class="mode demo">DEMO DATA</span>
-        <select id="language">
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="ko">한국어</option>
-        </select>
-        <button class="profile" onclick="openLogin()">
-          <span class="avatar" id="avatar">YF</span>
-          <span><strong id="profile-name">Yves Frederic Ndjoh</strong><small id="profile-meta">Cameroon · Participant</small></span>
-        </button>
-      </div>
-    </header>
-
+  <main class="main">
     <section id="dashboard" class="view active">
-      <div class="hero">
-        <div>
-          <span class="kicker" data-i18n="impactChallenge">90-DAY IMPACT CHALLENGE</span>
-          <h2 data-i18n="heroTitle">Turn every Action Plan into visible progress.</h2>
-          <p data-i18n="heroBody">Track implementation, evidence, KPIs and collaboration across five West African countries.</p>
-          <div class="actions">
-            <button class="primary" onclick="showView('myplan')" data-i18n="openPlan">Open My Action Plan</button>
-            <button class="light" onclick="showView('plans')" data-i18n="explorePlans">Explore Country Plans</button>
-          </div>
+      <div class="hero-koica">
+        <div class="hero-copy">
+          <div class="eyebrow" data-i18n="heroEyebrow">KOICA YOUTH LEADERS PROGRAM · ACTION TO IMPACT</div>
+          <h1 data-i18n="heroTitle">From training to measurable change.</h1>
+          <p data-i18n="heroBody">A shared implementation space where West African youth leaders turn Action Plans into milestones, evidence, partnerships and results.</p>
+          <div class="hero-actions"><button class="btn solid" onclick="showView('myplan')" data-i18n="openPlan">Continue my Action Plan</button><button class="btn outline-light" onclick="showView('plans')" data-i18n="explorePlans">Explore the five-country network</button></div>
+          <div class="hero-meta"><span><b data-i18n="currentPhase">Current phase</b><em>Ghana Field Training</em></span><span><b data-i18n="track">Track</b><em>Private Sector · AI/ICT Entrepreneurship</em></span></div>
         </div>
-        <div class="country-grid">
-          <div><img src="assets/flags/cameroon.svg" alt=""><span>Cameroon</span></div>
-          <div><img src="assets/flags/cote-divoire.svg" alt=""><span>Côte d'Ivoire</span></div>
-          <div><img src="assets/flags/ghana.svg" alt=""><span>Ghana</span></div>
-          <div><img src="assets/flags/nigeria.svg" alt=""><span>Nigeria</span></div>
-          <div><img src="assets/flags/senegal.svg" alt=""><span>Senegal</span></div>
+        <div class="country-network">
+          <div class="network-title"><span data-i18n="fiveCountryNetwork">FIVE-COUNTRY NETWORK</span><b>West Africa</b></div>
+          <div class="country-list">
+            <button onclick="jumpCountry('Cameroon')"><img src="assets/flags/cameroon.svg"><span>Cameroon</span><small>CM</small></button>
+            <button onclick="jumpCountry(`Côte d'Ivoire`)"><img src="assets/flags/cote-divoire.svg"><span>Côte d'Ivoire</span><small>CI</small></button>
+            <button onclick="jumpCountry('Ghana')"><img src="assets/flags/ghana.svg"><span>Ghana</span><small>GH</small></button>
+            <button onclick="jumpCountry('Nigeria')"><img src="assets/flags/nigeria.svg"><span>Nigeria</span><small>NG</small></button>
+            <button onclick="jumpCountry('Senegal')"><img src="assets/flags/senegal.svg"><span>Senegal</span><small>SN</small></button>
+          </div><div class="network-line"></div>
         </div>
       </div>
 
-      <div id="demo-banner" class="demo-banner">
-        <strong data-i18n="demoBannerTitle">Prototype data:</strong>
-        <span data-i18n="demoBannerBody">Cohort totals and sample participant projects are illustrative until the shared backend is connected.</span>
-      </div>
+      <div id="demo-banner" class="notice-bar"><span class="notice-dot"></span><strong data-i18n="demoBannerTitle">Prototype data</strong><span data-i18n="demoBannerBody">Cohort totals and sample projects remain illustrative until the shared backend is connected.</span></div>
 
-      <div class="stats">
-        <article><span data-i18n="activePlans">Active plans</span><strong>10</strong><small data-i18n="fiveCountries">Across five countries</small></article>
-        <article><span data-i18n="milestonesCompleted">Milestones completed</span><strong id="stat-milestones">28</strong><small data-i18n="implementation">Implementation progress</small></article>
-        <article><span data-i18n="evidenceItems">Evidence items</span><strong id="stat-evidence">14</strong><small data-i18n="photosDocs">Photos & documents</small></article>
-        <article><span data-i18n="collaborations">Cross-country matches</span><strong>7</strong><small data-i18n="peerLearning">Peer learning</small></article>
-      </div>
+      <section class="pulse"><div class="section-kicker" data-i18n="programPulse">PROGRAMME PULSE</div><div class="pulse-grid"><div><strong>10</strong><span data-i18n="activePlans">Active action plans</span></div><div><strong id="stat-milestones">28</strong><span data-i18n="milestonesCompleted">Milestones completed</span></div><div><strong id="stat-evidence">14</strong><span data-i18n="evidenceItems">Evidence items</span></div><div><strong>7</strong><span data-i18n="collaborations">Cross-country collaborations</span></div><div class="pulse-highlight"><strong>5</strong><span data-i18n="countries">Participating countries</span></div></div></section>
 
-      <div class="grid2">
-        <article class="card">
-          <div class="card-head">
-            <div><span class="kicker" data-i18n="myProject">MY PROJECT</span><h3 id="dash-project">SmartDry Cameroon</h3></div>
-            <span class="badge" data-i18n="onTrack">On track</span>
-          </div>
+      <div class="dashboard-layout">
+        <section class="mission-panel">
+          <div class="panel-header"><div><div class="section-kicker" data-i18n="myMission">MY 90-DAY MISSION</div><h2 id="dash-project">SmartDry Cameroon</h2></div><span class="status-badge" data-i18n="onTrack">On track</span></div>
           <p id="dash-solution"></p>
-          <div class="progress"><i id="dash-progress"></i></div>
-          <div class="mini">
-            <div><small data-i18n="nextMilestone">Next milestone</small><strong id="dash-next">Customer discovery</strong></div>
-            <div><small data-i18n="country">Country</small><strong id="dash-country"></strong></div>
-            <div><small>SDGs</small><strong>2 · 7 · 8 · 12 · 13</strong></div>
-          </div>
-        </article>
-
-        <article class="card">
-          <span class="kicker" data-i18n="quickActions">QUICK ACTIONS</span>
-          <h3 data-i18n="whatNext">What do you want to move forward?</h3>
-          <div class="quick">
-            <button onclick="showView('coach')" data-i18n="generateSmart">Generate SMART objective</button>
-            <button onclick="showView('challenge')" data-i18n="updateMilestone">Update milestone</button>
-            <button onclick="showView('evidence')" data-i18n="uploadEvidence">Upload evidence</button>
-            <button onclick="showView('plans')" data-i18n="findCollaborator">Find collaborator</button>
-          </div>
-        </article>
+          <div class="mission-progress"><div class="mission-progress-label"><span data-i18n="implementationProgress">Implementation progress</span><b id="progress-number">25%</b></div><div class="progress-track"><i id="dash-progress"></i></div></div>
+          <div class="mission-timeline"><div class="mission-step done"><span>00</span><b data-i18n="baseline">Baseline</b><small>Problem validation</small></div><div class="mission-step active"><span>30</span><b data-i18n="discovery">Discovery</b><small>20 user interviews</small></div><div class="mission-step"><span>60</span><b data-i18n="refine">Refine</b><small>Version 2 optimization</small></div><div class="mission-step"><span>90</span><b data-i18n="pilot">Pilot</b><small>Deployment ready</small></div></div>
+          <div class="mission-footer"><div><span data-i18n="nextMilestone">Next milestone</span><b id="dash-next">Customer discovery</b></div><div><span data-i18n="country">Country</span><b id="dash-country"></b></div><div><span>SDGs</span><b>2 · 7 · 8 · 12 · 13</b></div></div>
+        </section>
+        <aside class="brief-panel"><div class="section-kicker" data-i18n="actionBrief">ACTIONHUB BRIEF</div><h3 data-i18n="thisWeek">This week, move one thing forward.</h3><ol class="brief-list"><li><span>01</span><div><b data-i18n="brief1Title">Validate with users</b><p data-i18n="brief1Body">Complete 5 more farmer or processor interviews.</p></div></li><li><span>02</span><div><b data-i18n="brief2Title">Strengthen evidence</b><p data-i18n="brief2Body">Upload one test result or customer insight.</p></div></li><li><span>03</span><div><b data-i18n="brief3Title">Build across borders</b><p data-i18n="brief3Body">Connect with one fellow working in AgriTech or energy.</p></div></li></ol><button class="text-link" onclick="showView('coach')" data-i18n="askCoach">Ask the AI Coach →</button></aside>
       </div>
+
+      <section class="network-preview"><div class="network-preview-head"><div><div class="section-kicker" data-i18n="networkSpotlight">NETWORK SPOTLIGHT</div><h2 data-i18n="networkTitle">Ideas moving across borders</h2></div><button class="text-link" onclick="showView('plans')" data-i18n="viewAll">View all country plans →</button></div><div class="project-rail" id="project-rail"></div></section>
     </section>
 
     <section id="plans" class="view">
-      <div class="section-head">
-        <div><span class="kicker" data-i18n="crossCountry">CROSS-COUNTRY ACTION PLANS</span><h2 data-i18n="discoverProjects">Discover what participants are building.</h2></div>
-        <div class="filters">
-          <select id="country-filter" onchange="renderPlans()">
-            <option value="all" data-i18n="allCountries">All countries</option>
-            <option>Cameroon</option><option>Côte d'Ivoire</option><option>Ghana</option><option>Nigeria</option><option>Senegal</option>
-          </select>
-          <select id="sector-filter" onchange="renderPlans()">
-            <option value="all" data-i18n="allSectors">All sectors</option>
-            <option>AgriTech</option><option>Energy</option><option>Education</option><option>Health</option><option>FinTech</option><option>Digital Services</option>
-          </select>
-        </div>
-      </div>
-      <div id="plans-grid" class="plans-grid"></div>
+      <div class="page-intro"><div><div class="section-kicker" data-i18n="networkKicker">COUNTRY NETWORK</div><h1 data-i18n="discoverProjects">Discover people, problems and projects across West Africa.</h1><p data-i18n="discoverBody">Find collaborators by country, sector and implementation stage — then turn programme relationships into practical partnerships.</p></div><div class="page-stat"><strong>5</strong><span data-i18n="countriesConnected">countries connected</span></div></div>
+      <div class="country-tabs" id="country-tabs"><button class="active" data-country="all" onclick="selectCountryTab('all',this)" data-i18n="allCountries">All countries</button><button data-country="Cameroon" onclick="selectCountryTab('Cameroon',this)"><img src="assets/flags/cameroon.svg">Cameroon</button><button data-country="Côte d'Ivoire" onclick="selectCountryTab(`Côte d'Ivoire`,this)"><img src="assets/flags/cote-divoire.svg">Côte d'Ivoire</button><button data-country="Ghana" onclick="selectCountryTab('Ghana',this)"><img src="assets/flags/ghana.svg">Ghana</button><button data-country="Nigeria" onclick="selectCountryTab('Nigeria',this)"><img src="assets/flags/nigeria.svg">Nigeria</button><button data-country="Senegal" onclick="selectCountryTab('Senegal',this)"><img src="assets/flags/senegal.svg">Senegal</button></div>
+      <div class="network-toolbar"><div class="searchbox"><span>⌕</span><input id="project-search" oninput="renderPlans()" placeholder="Search by project, participant or keyword"></div><select id="sector-filter" onchange="renderPlans()"><option value="all" data-i18n="allSectors">All sectors</option><option>AgriTech</option><option>Energy</option><option>Education</option><option>Health</option><option>FinTech</option><option>Digital Services</option></select></div>
+      <div class="project-table"><div class="project-table-head"><span data-i18n="project">Project</span><span data-i18n="participant">Participant</span><span data-i18n="country">Country</span><span data-i18n="sector">Sector</span><span data-i18n="progress">Progress</span><span></span></div><div id="plans-list"></div></div>
     </section>
 
     <section id="myplan" class="view">
-      <div class="section-head"><div><span class="kicker" data-i18n="myPlan">MY ACTION PLAN</span><h2 data-i18n="buildImplementable">Build something you can actually implement.</h2></div></div>
-      <form class="card form-grid" onsubmit="event.preventDefault();savePlan()">
-        <label><span data-i18n="projectTitle">Project title</span><input id="projectTitle"></label>
-        <label><span data-i18n="country">Country</span><select id="country"><option>Cameroon</option><option>Côte d'Ivoire</option><option>Ghana</option><option>Nigeria</option><option>Senegal</option></select></label>
-        <label><span data-i18n="sector">Sector</span><input id="sector"></label>
-        <label><span data-i18n="stage">Stage</span><input id="stage"></label>
-        <label class="full"><span data-i18n="problem">Problem</span><textarea id="problem"></textarea></label>
-        <label class="full"><span data-i18n="solution">Proposed solution</span><textarea id="solution"></textarea></label>
-        <label><span data-i18n="beneficiaries">Target beneficiaries</span><input id="beneficiaries"></label>
-        <label><span data-i18n="partners">Partners / stakeholders</span><input id="partners"></label>
-        <label><span data-i18n="kpis">Key KPIs</span><input id="kpis"></label>
-        <label><span>SDGs</span><input id="sdgs"></label>
-        <div class="full actions">
-          <button class="primary" type="submit" data-i18n="savePlan">Save Action Plan</button>
-          <button class="secondary" type="button" onclick="window.print()" data-i18n="exportPdf">Print / Export PDF</button>
-        </div>
-      </form>
+      <div class="page-intro compact"><div><div class="section-kicker" data-i18n="actionPlanKicker">ACTION PLAN WORKSPACE</div><h1 data-i18n="buildImplementable">Build something you can actually implement.</h1><p data-i18n="planBody">Move from a strong idea to a credible implementation path with clear users, milestones, evidence and partnerships.</p></div><div class="workspace-progress"><span data-i18n="workspaceStatus">Workspace status</span><strong>7 / 10</strong><div><i style="width:70%"></i></div></div></div>
+      <div class="workspace"><aside class="workspace-steps"><button class="active"><span>01</span><b data-i18n="problem">Problem</b><small data-i18n="defined">Defined</small></button><button><span>02</span><b data-i18n="solution">Solution</b><small data-i18n="defined">Defined</small></button><button><span>03</span><b data-i18n="beneficiaries">Beneficiaries</b><small data-i18n="defined">Defined</small></button><button><span>04</span><b data-i18n="partners">Partners</b><small data-i18n="review">Review</small></button><button><span>05</span><b data-i18n="kpis">KPIs</b><small data-i18n="review">Review</small></button></aside>
+        <form class="workspace-form" onsubmit="event.preventDefault();savePlan()"><div class="form-title"><div><span>01—05</span><h2 data-i18n="corePlan">Core implementation plan</h2></div><button type="button" class="btn subtle" onclick="window.print()" data-i18n="exportPdf">Export PDF</button></div><div class="form-grid"><label><span data-i18n="projectTitle">Project title</span><input id="projectTitle"></label><label><span data-i18n="country">Country</span><select id="country"><option>Cameroon</option><option>Côte d'Ivoire</option><option>Ghana</option><option>Nigeria</option><option>Senegal</option></select></label><label><span data-i18n="sector">Sector</span><input id="sector"></label><label><span data-i18n="stage">Stage</span><input id="stage"></label><label class="full"><span data-i18n="problem">Problem</span><textarea id="problem"></textarea></label><label class="full"><span data-i18n="solution">Proposed solution</span><textarea id="solution"></textarea></label><label><span data-i18n="beneficiaries">Target beneficiaries</span><input id="beneficiaries"></label><label><span data-i18n="partners">Partners / stakeholders</span><input id="partners"></label><label><span data-i18n="kpis">Key KPIs</span><input id="kpis"></label><label><span>SDGs</span><input id="sdgs"></label></div><div class="save-bar"><span data-i18n="saveNote">Your plan is saved locally until the shared backend is activated.</span><button class="btn solid" type="submit" data-i18n="savePlan">Save Action Plan</button></div></form>
+      </div>
     </section>
 
     <section id="coach" class="view">
-      <div class="section-head"><div><span class="kicker" data-i18n="realAi">AI ACTION PLAN COACH</span><h2 data-i18n="coachTitle">Turn a broad idea into a stronger implementation plan.</h2><p data-i18n="coachNote">The secure AI endpoint activates when an OpenAI API key is configured on Vercel.</p></div></div>
-      <div class="grid2">
-        <article class="card form">
-          <label><span data-i18n="problem">Problem</span><textarea id="coachProblem"></textarea></label>
-          <label><span data-i18n="affected">Who is affected?</span><input id="coachUsers"></label>
-          <label><span data-i18n="solution">Proposed solution</span><textarea id="coachSolution"></textarea></label>
-          <label><span data-i18n="country">Country</span><select id="coachCountry"><option>Cameroon</option><option>Côte d'Ivoire</option><option>Ghana</option><option>Nigeria</option><option>Senegal</option></select></label>
-          <button class="primary" onclick="runCoach()" data-i18n="askCoach">Ask AI Coach</button>
-        </article>
-        <article class="card ai-output" id="coach-output"><span class="kicker" data-i18n="coachOutput">COACH OUTPUT</span><h3 data-i18n="ready">Ready when you are.</h3><p data-i18n="coachPrompt">The coach will suggest a SMART objective, KPIs, milestones, risks, stakeholder actions and SDG links.</p></article>
-      </div>
+      <div class="page-intro compact"><div><div class="section-kicker" data-i18n="coachKicker">AI ACTION PLAN COACH</div><h1 data-i18n="coachTitle">A practical coach for turning intent into implementation.</h1><p data-i18n="coachBody">Use the coach to pressure-test your problem, strengthen KPIs, prepare customer-discovery questions and identify risks.</p></div><span class="coach-status" id="coach-status">AI API + LOCAL FALLBACK</span></div>
+      <div class="coach-layout"><section class="coach-conversation"><div class="coach-intro-message"><div class="coach-symbol">K</div><div><b>KOICA ActionHub Coach</b><p data-i18n="coachWelcome">Tell me what you are trying to change. I will help you make the plan clearer, measurable and realistic.</p></div></div><div class="coach-context"><label><span data-i18n="problem">Problem</span><textarea id="coachProblem"></textarea></label><div class="context-row"><label><span data-i18n="affected">Who is affected?</span><input id="coachUsers"></label><label><span data-i18n="country">Country</span><select id="coachCountry"><option>Cameroon</option><option>Côte d'Ivoire</option><option>Ghana</option><option>Nigeria</option><option>Senegal</option></select></label></div><label><span data-i18n="solution">Proposed solution</span><textarea id="coachSolution"></textarea></label><button class="btn solid coach-send" onclick="runCoach()" data-i18n="askCoachButton">Build my implementation brief</button></div><div class="coach-answer" id="coach-output"><span class="answer-label" data-i18n="coachOutput">COACH OUTPUT</span><h3 data-i18n="ready">Ready when you are.</h3><p data-i18n="coachPrompt">The coach will return one SMART objective, five KPIs, 30/60/90-day milestones, stakeholder actions, risks and discovery questions.</p></div></section>
+        <aside class="coach-side"><div class="section-kicker" data-i18n="coachChecklist">COACHING CHECKLIST</div><h3 data-i18n="strongPlan">A strong Action Plan answers six questions.</h3><ul><li><span>01</span><p><b data-i18n="who">Who?</b><em data-i18n="whoText">Who experiences the problem?</em></p></li><li><span>02</span><p><b data-i18n="why">Why?</b><em data-i18n="whyText">Why does it matter now?</em></p></li><li><span>03</span><p><b data-i18n="what">What?</b><em data-i18n="whatText">What exactly will change?</em></p></li><li><span>04</span><p><b data-i18n="measure">Measure</b><em data-i18n="measureText">How will you know it worked?</em></p></li><li><span>05</span><p><b data-i18n="partners">Partners</b><em data-i18n="partnersText">Who must help make it happen?</em></p></li><li><span>06</span><p><b data-i18n="next90">Next 90 days</b><em data-i18n="next90Text">What can realistically happen first?</em></p></li></ul></aside></div>
     </section>
 
-    <section id="challenge" class="view">
-      <div class="section-head"><div><span class="kicker" data-i18n="challenge">90-DAY CHALLENGE</span><h2 data-i18n="oneCommitment">One commitment. Four checkpoints. Visible progress.</h2></div></div>
-      <div id="milestone-list"></div>
-    </section>
+    <section id="challenge" class="view"><div class="page-intro compact"><div><div class="section-kicker" data-i18n="missionKicker">90-DAY IMPLEMENTATION MISSION</div><h1 data-i18n="missionTitle">One commitment. Four checkpoints. Visible evidence.</h1><p data-i18n="missionBody">The goal is not to report activity. The goal is to show movement from intention to implementation.</p></div><div class="mission-score"><span data-i18n="currentProgress">Current progress</span><strong id="mission-score-value">25%</strong></div></div><div class="long-timeline" id="milestone-list"></div></section>
 
-    <section id="evidence" class="view">
-      <div class="section-head"><div><span class="kicker" data-i18n="evidence">EVIDENCE UPLOADS</span><h2 data-i18n="showChange">Show what changed — not only what you planned.</h2></div></div>
-      <div class="grid2">
-        <article class="card form">
-          <label><span data-i18n="evidenceTitle">Evidence title</span><input id="evidenceTitle"></label>
-          <label><span data-i18n="evidenceType">Evidence type</span><select id="evidenceType"><option>Photo</option><option>Document</option><option>Interview note</option><option>Test result</option><option>Partnership</option></select></label>
-          <label><span data-i18n="file">File</span><input id="evidenceFile" type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"></label>
-          <label><span data-i18n="note">Short note</span><textarea id="evidenceNote"></textarea></label>
-          <button class="primary" onclick="uploadEvidence()" data-i18n="uploadEvidence">Upload evidence</button>
-          <small id="storage-hint" class="hint" data-i18n="storageHint">In demo mode, only file metadata is stored locally. Configure Supabase Storage for real uploads.</small>
-        </article>
-        <article class="card"><h3 data-i18n="evidenceLibrary">Evidence library</h3><div id="evidence-list"></div></article>
-      </div>
-    </section>
+    <section id="evidence" class="view"><div class="page-intro compact"><div><div class="section-kicker" data-i18n="journalKicker">FIELD JOURNAL</div><h1 data-i18n="journalTitle">Build the evidence behind your impact story.</h1><p data-i18n="journalBody">Capture interviews, test results, partnerships, field photos and lessons — so progress can be verified, not just described.</p></div><button class="btn solid" onclick="document.getElementById('evidenceTitle').focus()" data-i18n="addEvidence">+ Add evidence</button></div><div class="journal-layout"><form class="journal-form" onsubmit="event.preventDefault();uploadEvidence()"><div class="section-kicker" data-i18n="newEntry">NEW JOURNAL ENTRY</div><label><span data-i18n="evidenceTitle">Evidence title</span><input id="evidenceTitle"></label><div class="context-row"><label><span data-i18n="evidenceType">Type</span><select id="evidenceType"><option>Photo</option><option>Document</option><option>Interview note</option><option>Test result</option><option>Partnership</option></select></label><label><span data-i18n="file">File</span><input id="evidenceFile" type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"></label></div><label><span data-i18n="note">What does this evidence show?</span><textarea id="evidenceNote"></textarea></label><button class="btn solid" type="submit" data-i18n="saveEvidence">Save to Field Journal</button><small id="storage-hint" data-i18n="storageHint">Demo mode stores only the file name locally. Supabase will enable real uploads.</small></form><div class="journal-stream"><div class="journal-stream-head"><div><div class="section-kicker" data-i18n="evidenceLibrary">EVIDENCE LIBRARY</div><h2 data-i18n="recentEntries">Recent entries</h2></div><span id="journal-count">1 entry</span></div><div id="evidence-list"></div></div></div></section>
 
-    <section id="coordinator" class="view">
-      <div class="section-head">
-        <div><span class="kicker" data-i18n="coordinator">COORDINATOR DASHBOARD</span><h2 data-i18n="coordinatorTitle">See participation, implementation and support needs at a glance.</h2></div>
-        <select id="coord-country" onchange="renderCoordinator()"><option value="all" data-i18n="allCountries">All countries</option><option>Cameroon</option><option>Côte d'Ivoire</option><option>Ghana</option><option>Nigeria</option><option>Senegal</option></select>
-      </div>
-      <div class="stats">
-        <article><span data-i18n="participants">Participants</span><strong id="coord-parts">0</strong></article>
-        <article><span data-i18n="plansSubmitted">Plans submitted</span><strong id="coord-plans">0</strong></article>
-        <article><span data-i18n="atRisk">Need follow-up</span><strong id="coord-risk">0</strong></article>
-        <article><span data-i18n="evidenceItems">Evidence items</span><strong id="coord-evidence">0</strong></article>
-      </div>
-      <article class="card"><table><thead><tr><th data-i18n="participant">Participant</th><th data-i18n="country">Country</th><th data-i18n="project">Project</th><th data-i18n="progress">Progress</th><th data-i18n="status">Status</th></tr></thead><tbody id="coord-table"></tbody></table></article>
-    </section>
+    <section id="coordinator" class="view"><div class="page-intro compact"><div><div class="section-kicker" data-i18n="oversightKicker">PROGRAMME OVERSIGHT</div><h1 data-i18n="oversightTitle">Know where participants are progressing — and where support is needed.</h1><p data-i18n="oversightBody">A coordinator view designed for follow-up, not surveillance: implementation status, evidence, risk signals and country-level support needs.</p></div><select id="coord-country" onchange="renderCoordinator()"><option value="all" data-i18n="allCountries">All countries</option><option>Cameroon</option><option>Côte d'Ivoire</option><option>Ghana</option><option>Nigeria</option><option>Senegal</option></select></div><div class="oversight-strip"><div><span data-i18n="participants">Participants</span><strong id="coord-parts">0</strong></div><div><span data-i18n="plansSubmitted">Plans submitted</span><strong id="coord-plans">0</strong></div><div><span data-i18n="atRisk">Need follow-up</span><strong id="coord-risk">0</strong></div><div><span data-i18n="evidenceItems">Evidence items</span><strong id="coord-evidence">0</strong></div></div><div class="oversight-layout"><section class="oversight-table"><div class="oversight-table-head"><span data-i18n="participant">Participant</span><span data-i18n="country">Country</span><span data-i18n="project">Project</span><span data-i18n="progress">Progress</span><span data-i18n="status">Status</span></div><div id="coord-table"></div></section><aside class="support-panel"><div class="section-kicker" data-i18n="supportSignals">SUPPORT SIGNALS</div><h3 data-i18n="whereHelp">Where help may unlock progress</h3><div class="support-item"><span class="signal amber"></span><div><b>Customer discovery</b><p>3 plans below 40% progress.</p></div></div><div class="support-item"><span class="signal blue"></span><div><b>Cross-country matching</b><p>2 founders seek technical partners.</p></div></div><div class="support-item"><span class="signal green"></span><div><b>Evidence quality</b><p>Most active participants are uploading results, not just activities.</p></div></div></aside></div></section>
 
-    <footer class="footer">
-      <div><strong>ActionHub</strong> <span data-i18n="footerText">Participant-built prototype developed during the KOICA Youth Leaders Program 2026–2027.</span></div>
-      <button onclick="openFeedback()" data-i18n="feedback">Send Feedback</button>
-    </footer>
+    <footer class="footer"><div class="footer-brand"><img src="assets/actionhub-mark.svg"><span><b>KOICA ActionHub</b><small data-i18n="footerText">Participant innovation for the KOICA Youth Leaders Program 2026–2027.</small></span></div><div class="footer-values"><span data-i18n="footerValue1">Open communication</span><span data-i18n="footerValue2">Collaboration</span><span data-i18n="footerValue3">Measurable impact</span></div><button onclick="openFeedback()" data-i18n="feedback">Send feedback</button></footer>
   </main>
 </div>
 
-<div id="login-modal" class="modal hidden">
-  <div class="modal-card">
-    <button class="close" onclick="closeLogin()">×</button>
-    <span class="kicker" data-i18n="login">LOGIN / ROLE</span>
-    <h2 data-i18n="welcome">Welcome to ActionHub</h2>
-    <p data-i18n="loginNote">Use demo mode now, or configure Supabase for real accounts.</p>
-    <div class="form">
-      <label><span data-i18n="name">Name</span><input id="login-name" value="Yves Frederic Ndjoh"></label>
-      <label>Email<input id="login-email" type="email"></label>
-      <label><span data-i18n="password">Password</span><input id="login-password" type="password"></label>
-      <label><span data-i18n="country">Country</span><select id="login-country"><option>Cameroon</option><option>Côte d'Ivoire</option><option>Ghana</option><option>Nigeria</option><option>Senegal</option></select></label>
-      <label><span data-i18n="role">Role</span><select id="login-role"><option value="participant">Participant</option><option value="coordinator">Coordinator (demo only)</option></select></label>
-      <div class="actions">
-        <button class="primary" onclick="demoLogin()" data-i18n="continueDemo">Continue in demo mode</button>
-        <button class="secondary" onclick="realLogin()" data-i18n="realLogin">Sign in</button>
-        <button class="secondary" onclick="realSignUp()" data-i18n="signUp">Create participant account</button>
-        <button class="danger" onclick="realLogout()" data-i18n="logout">Sign out</button>
-      </div>
-    </div>
-  </div>
-</div>
+<div id="login-modal" class="modal hidden"><div class="modal-card"><button class="modal-close" onclick="closeLogin()">×</button><div class="section-kicker" data-i18n="account">ACTIONHUB ACCOUNT</div><h2 data-i18n="welcome">Welcome to KOICA ActionHub</h2><p data-i18n="loginNote">Use demo mode now. Supabase will enable real participant accounts and shared data.</p><div class="form-stack"><label><span data-i18n="name">Name</span><input id="login-name" value="Yves Frederic Ndjoh"></label><label>Email<input id="login-email" type="email"></label><label><span data-i18n="password">Password</span><input id="login-password" type="password"></label><div class="context-row"><label><span data-i18n="country">Country</span><select id="login-country"><option>Cameroon</option><option>Côte d'Ivoire</option><option>Ghana</option><option>Nigeria</option><option>Senegal</option></select></label><label><span data-i18n="role">Role</span><select id="login-role"><option value="participant">Participant</option><option value="coordinator">Coordinator (demo)</option></select></label></div><div class="modal-actions"><button class="btn solid" onclick="demoLogin()" data-i18n="continueDemo">Continue in demo mode</button><button class="btn subtle" onclick="realLogin()" data-i18n="realLogin">Sign in</button><button class="btn subtle" onclick="realSignUp()" data-i18n="signUp">Create participant account</button></div></div></div></div>
 
-<div id="feedback-modal" class="modal hidden">
-  <div class="modal-card">
-    <button class="close" onclick="closeFeedback()">×</button>
-    <span class="kicker" data-i18n="feedback">SEND FEEDBACK</span>
-    <h2 data-i18n="feedbackTitle">Help us improve ActionHub</h2>
-    <p data-i18n="feedbackNote">Share what is useful, confusing, or missing.</p>
-    <div class="form">
-      <label><span data-i18n="feedbackType">Feedback type</span><select id="feedback-type"><option>Useful feature</option><option>Problem / bug</option><option>Missing feature</option><option>General suggestion</option></select></label>
-      <label><span data-i18n="rating">Overall usefulness</span><select id="feedback-rating"><option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Fair</option><option value="2">2 — Limited</option><option value="1">1 — Poor</option></select></label>
-      <label><span data-i18n="feedbackMessage">Your feedback</span><textarea id="feedback-message"></textarea></label>
-      <button class="primary" onclick="submitFeedback()" data-i18n="submitFeedback">Submit feedback</button>
-    </div>
-  </div>
-</div>
+<div id="feedback-modal" class="modal hidden"><div class="modal-card"><button class="modal-close" onclick="closeFeedback()">×</button><div class="section-kicker" data-i18n="feedbackKicker">PARTICIPANT FEEDBACK</div><h2 data-i18n="feedbackTitle">Help make KOICA ActionHub more useful.</h2><p data-i18n="feedbackNote">Tell us what helps, what gets in the way, and what the platform should do next.</p><div class="form-stack"><label><span data-i18n="feedbackType">Feedback type</span><select id="feedback-type"><option>Useful feature</option><option>Problem / bug</option><option>Missing feature</option><option>General suggestion</option></select></label><label><span data-i18n="rating">Overall usefulness</span><select id="feedback-rating"><option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Fair</option><option value="2">2 — Limited</option><option value="1">1 — Poor</option></select></label><label><span data-i18n="feedbackMessage">Your feedback</span><textarea id="feedback-message"></textarea></label><button class="btn solid" onclick="submitFeedback()" data-i18n="submitFeedback">Submit feedback</button></div></div></div>
 
-<script src="config.js"></script>
-<script src="app.js"></script>
-</body>
-</html>
+<script src="config.js"></script><script src="app.js"></script>
+</body></html>
