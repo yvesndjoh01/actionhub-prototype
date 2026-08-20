@@ -1,15 +1,96 @@
 create extension if not exists pgcrypto;
-create table if not exists public.profiles(id uuid primary key references auth.users(id) on delete cascade,full_name text,email text,country text,role text default 'participant',organization text,created_at timestamptz default now());
-create table if not exists public.action_plans(id uuid primary key default gen_random_uuid(),user_id uuid unique references public.profiles(id) on delete cascade,title text not null,country text,sector text,stage text,problem text,solution text,beneficiaries text,partners text,kpis text,sdgs text,progress int default 0,created_at timestamptz default now(),updated_at timestamptz default now());
-create table if not exists public.evidence(id uuid primary key default gen_random_uuid(),user_id uuid references public.profiles(id) on delete cascade,action_plan_id uuid references public.action_plans(id) on delete cascade,title text not null,type text,note text,file_path text,file_name text,created_at timestamptz default now());
-create table if not exists public.milestones(id uuid primary key default gen_random_uuid(),action_plan_id uuid references public.action_plans(id) on delete cascade,label text,title text,description text,due_date date,completed boolean default false,created_at timestamptz default now());
-alter table public.profiles enable row level security;alter table public.action_plans enable row level security;alter table public.evidence enable row level security;alter table public.milestones enable row level security;
-create policy "profiles readable" on public.profiles for select using (auth.role()='authenticated');
-create policy "own profile insert" on public.profiles for insert with check (auth.uid()=id);create policy "own profile update" on public.profiles for update using (auth.uid()=id);
-create policy "plans readable" on public.action_plans for select using (auth.role()='authenticated');create policy "own plan" on public.action_plans for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
-create policy "evidence readable" on public.evidence for select using (auth.role()='authenticated');create policy "own evidence" on public.evidence for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
-create policy "milestones readable" on public.milestones for select using (auth.role()='authenticated');
+
+create table if not exists public.profiles(
+  id uuid primary key references auth.users(id) on delete cascade,
+  full_name text,
+  email text,
+  country text check(country in ('Cameroon','Côte d''Ivoire','Ghana','Nigeria','Senegal')),
+  role text default 'participant' check(role in ('participant','coordinator','admin')),
+  organization text,
+  created_at timestamptz default now()
+);
+
+create table if not exists public.action_plans(
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid unique references public.profiles(id) on delete cascade,
+  title text not null,
+  country text,
+  sector text,
+  stage text,
+  problem text,
+  solution text,
+  beneficiaries text,
+  partners text,
+  kpis text,
+  sdgs text,
+  progress int default 0 check(progress between 0 and 100),
+  status text default 'active',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.evidence(
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete cascade,
+  action_plan_id uuid references public.action_plans(id) on delete cascade,
+  title text not null,
+  type text,
+  note text,
+  file_path text,
+  file_name text,
+  created_at timestamptz default now()
+);
+
+create table if not exists public.feedback(
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete set null,
+  type text,
+  rating int check(rating between 1 and 5),
+  message text not null,
+  country text,
+  created_at timestamptz default now()
+);
+
+alter table public.profiles enable row level security;
+alter table public.action_plans enable row level security;
+alter table public.evidence enable row level security;
+alter table public.feedback enable row level security;
+
+create or replace function public.current_user_role()
+returns text language sql stable security definer as $$ select role from public.profiles where id=auth.uid(); $$;
+create or replace function public.current_user_country()
+returns text language sql stable security definer as $$ select country from public.profiles where id=auth.uid(); $$;
+
+create policy "Authenticated profiles readable" on public.profiles for select using(auth.role()='authenticated');
+create policy "Users insert own profile" on public.profiles for insert with check(auth.uid()=id);
+create policy "Users update own profile" on public.profiles for update using(auth.uid()=id);
+
+create policy "Authenticated plans readable" on public.action_plans for select using(auth.role()='authenticated');
+create policy "Users insert own plan" on public.action_plans for insert with check(auth.uid()=user_id);
+create policy "Users update own plan" on public.action_plans for update using(auth.uid()=user_id);
+create policy "Users delete own plan" on public.action_plans for delete using(auth.uid()=user_id);
+
+create policy "Evidence owner or staff read" on public.evidence for select using(
+  auth.uid()=user_id or public.current_user_role()='admin' or
+  (public.current_user_role()='coordinator' and exists(select 1 from public.profiles p where p.id=evidence.user_id and p.country=public.current_user_country()))
+);
+create policy "Users insert own evidence" on public.evidence for insert with check(auth.uid()=user_id);
+create policy "Users delete own evidence" on public.evidence for delete using(auth.uid()=user_id);
+
+create policy "Authenticated users submit feedback" on public.feedback for insert with check(auth.role()='authenticated' and (user_id is null or auth.uid()=user_id));
+create policy "Staff read feedback" on public.feedback for select using(public.current_user_role() in ('coordinator','admin'));
+
 insert into storage.buckets(id,name,public) values('evidence','evidence',false) on conflict(id) do nothing;
-create policy "evidence upload" on storage.objects for insert with check (bucket_id='evidence' and auth.uid()::text=(storage.foldername(name))[1]);create policy "evidence read" on storage.objects for select using (bucket_id='evidence' and auth.role()='authenticated');
-create or replace function public.handle_new_user() returns trigger language plpgsql security definer as $$ begin insert into public.profiles(id,email,full_name,country,role) values(new.id,new.email,coalesce(new.raw_user_meta_data->>'full_name','Participant'),coalesce(new.raw_user_meta_data->>'country','Cameroon'),coalesce(new.raw_user_meta_data->>'role','participant')); return new; end; $$;
-drop trigger if exists on_auth_user_created on auth.users;create trigger on_auth_user_created after insert on auth.users for each row execute procedure public.handle_new_user();
+create policy "Users upload evidence files" on storage.objects for insert with check(bucket_id='evidence' and auth.uid()::text=(storage.foldername(name))[1]);
+create policy "Evidence files owner or staff read" on storage.objects for select using(bucket_id='evidence' and (auth.uid()::text=(storage.foldername(name))[1] or public.current_user_role() in ('coordinator','admin')));
+
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer as $$
+begin
+  insert into public.profiles(id,email,full_name,country,role)
+  values(new.id,new.email,coalesce(new.raw_user_meta_data->>'full_name','Participant'),coalesce(new.raw_user_meta_data->>'country','Cameroon'),'participant');
+  return new;
+end; $$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created after insert on auth.users for each row execute procedure public.handle_new_user();
