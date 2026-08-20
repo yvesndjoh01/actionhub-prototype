@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KOICA ActionHub — Prototype</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<aside>
+  <h2>KOICA ActionHub</h2>
+  <small>Unofficial participant prototype</small>
+  <button data-view="dashboard" class="active">Dashboard</button>
+  <button data-view="plan">My Action Plan</button>
+  <button data-view="coach">AI Action Plan Coach</button>
+  <button data-view="challenge">90-Day Challenge</button>
+  <button data-view="updates">Progress Updates</button>
+  <button data-view="impact">Cohort Impact</button>
+</aside>
+<main>
+<header><div><h1 id="title">Dashboard</h1><p>From training to measurable impact.</p></div><div class="user">Yves Frederic Ndjoh<br><span>Cameroon · Private Sector</span></div></header>
+
+<section id="dashboard" class="view active">
+<div class="hero"><div><b>90-DAY IMPACT CHALLENGE</b><h2>Turn your KOICA learning into visible results.</h2><p>Define a problem, track milestones, measure KPIs, and show what changed.</p></div><button onclick="show('plan')">Open My Action Plan</button></div>
+<div class="stats">
+<div><span>Progress</span><strong id="progress">25%</strong></div>
+<div><span>Milestones</span><strong id="mcount">1 / 4</strong></div>
+<div><span>KPIs</span><strong>5</strong></div>
+<div><span>Updates</span><strong id="ucount">1</strong></div>
+</div>
+<div class="card"><h3 id="dashname">SmartDry Cameroon</h3><p id="dashsolution"></p><div class="bar"><i id="dashbar"></i></div><p><b>Next milestone:</b> <span id="nextm"></span></p></div>
+</section>
+
+<section id="plan" class="view">
+<h2>My Action Plan</h2>
+<div class="card form">
+<label>Project title<input id="projectTitle"></label>
+<label>Country<input id="country"></label>
+<label>Problem<textarea id="problem"></textarea></label>
+<label>Solution<textarea id="solution"></textarea></label>
+<label>Target beneficiaries<input id="beneficiaries"></label>
+<label>Partners<input id="partners"></label>
+<label>SDGs<input id="sdgs"></label>
+<button onclick="savePlan()">Save Action Plan</button>
+<button class="secondary" onclick="window.print()">Print / Export PDF</button>
+</div>
+</section>
+
+<section id="coach" class="view">
+<h2>AI Action Plan Coach — Prototype</h2>
+<p>This local demo turns a broad idea into a structured SMART objective, KPIs, milestones and risks.</p>
+<div class="grid2">
+<div class="card form">
+<label>Problem<textarea id="cproblem">Farmers lose value because open-air drying is unreliable and unhygienic.</textarea></label>
+<label>Who is affected?<input id="cusers" value="smallholder farmers and food processors"></label>
+<label>Proposed solution<textarea id="csol">Pilot a smart hybrid solar dryer with digital monitoring.</textarea></label>
+<button onclick="coach()">Generate Suggestions</button>
+</div>
+<div class="card" id="coachout"><h3>Ready</h3><p>Generate suggestions to see the structured output.</p></div>
+</div>
+</section>
+
+<section id="challenge" class="view"><h2>90-Day Challenge</h2><div id="milestones"></div></section>
+
+<section id="updates" class="view">
+<h2>Progress Updates</h2>
+<div class="grid2">
+<div class="card form"><label>Date<input type="date" id="udate"></label><label>Update<textarea id="utext"></textarea></label><label>Evidence<input id="uevidence"></label><button onclick="addUpdate()">Add Update</button></div>
+<div class="card"><div id="updateslist"></div></div>
+</div>
+</section>
+
+<section id="impact" class="view">
+<h2>Cohort Impact Dashboard — Demo Data</h2>
+<div class="stats"><div><span>Active plans</span><strong>88</strong></div><div><span>Pilots launched</span><strong>27</strong></div><div><span>People reached</span><strong>4,350</strong></div><div><span>Partnerships</span><strong>16</strong></div></div>
+<div class="card">
+<h3>Country progress</h3>
+<p>🇨🇲 Cameroon <progress value="72" max="100"></progress> 72%</p>
+<p>🇬🇭 Ghana <progress value="78" max="100"></progress> 78%</p>
+<p>🇳🇬 Nigeria <progress value="67" max="100"></progress> 67%</p>
+<p>🇸🇳 Senegal <progress value="61" max="100"></progress> 61%</p>
+<p>🇨🇮 Côte d'Ivoire <progress value="69" max="100"></progress> 69%</p>
+<small>* Illustrative demo data only; not official KOICA data.</small>
+</div>
+</section>
+</main>
+<script src="app.js"></script>
+</body></html>
