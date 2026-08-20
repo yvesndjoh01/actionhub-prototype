@@ -33,3 +33,23 @@ Never expose a secret API key inside `index.html`, `app.js`, or `config.js`.
 
 ## Branding
 This package uses the name **KOICA ActionHub** and a custom ActionHub mark designed for the platform. The mark is not the KOICA Authority Mark. If KOICA provides the official Communication Mark asset for this platform, it can replace or sit alongside `assets/actionhub-mark.svg`.
+
+
+## Connected backend status
+This package is configured for the active Supabase project using a browser-safe publishable key.
+
+Backend objects already created:
+- profiles
+- action_plans
+- milestones
+- evidence
+- collaboration_interests
+- feedback
+- private evidence storage bucket
+- Row Level Security policies
+- automatic participant profile creation after signup
+
+The publishable key in `config.js` is intentionally browser-visible. Access control is enforced by Supabase Row Level Security. Never put a Supabase service-role key in browser code.
+
+## Trust layer
+This version adds About ActionHub, How It Works, Privacy & Data Use, and Help & User Guide. Before full cohort rollout, the programme team should review and approve final privacy and retention wording.
