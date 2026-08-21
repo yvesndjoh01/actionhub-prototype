@@ -1,4 +1,4 @@
-// ACTIONHUB PARTICIPANT DIRECTORY V1 - 2026-08-21
+// ACTIONHUB PARTICIPANT DIRECTORY V2 - 2026-08-21
 // Read-only cohort participant profiles. Load AFTER access.js.
 // Does not modify authentication, profile editing, collaboration persistence, or Action Plan saving.
 
@@ -103,7 +103,23 @@ function ahDirectoryStyles(){
       display:block;margin-top:4px;color:#6b7d90;font-size:10px;
       font-weight:600;text-transform:uppercase;letter-spacing:.06em
     }
-    .ah-directory-card{width:min(900px,calc(100vw - 28px));max-height:90vh;overflow:auto;padding:0!important}
+    .ah-directory-card{
+      width:min(900px,calc(100vw - 28px));max-height:90vh;overflow:auto;
+      padding:0!important;position:relative
+    }
+    #participant-profile-modal .ah-directory-close{
+      position:absolute;top:14px;right:14px;z-index:50;
+      width:38px;height:38px;border-radius:50%;
+      border:1px solid rgba(255,255,255,.62);
+      background:#fff;color:#0b4f86;
+      display:grid;place-items:center;
+      font-size:25px;line-height:1;font-weight:500;
+      cursor:pointer;box-shadow:0 4px 14px rgba(0,32,60,.18)
+    }
+    #participant-profile-modal .ah-directory-close:hover,
+    #participant-profile-modal .ah-directory-close:focus{
+      background:#eef6fc;color:#004f8d;outline:2px solid rgba(0,103,185,.18)
+    }
     .ah-directory-shell{background:#fff}
     .ah-directory-cover{
       min-height:116px;padding:28px 32px 24px;
@@ -192,16 +208,32 @@ function ahEnsureDirectoryModal(){
   modal.id='participant-profile-modal';
   modal.className='modal hidden';
   modal.innerHTML=`<div class="modal-card ah-directory-card">
-    <button class="modal-close" type="button" onclick="closeParticipantProfile()">×</button>
+    <button class="ah-directory-close" type="button" aria-label="Close participant profile" title="Close" onclick="closeParticipantProfile()">×</button>
     <div id="ah-directory-content" class="ah-directory-shell"></div>
   </div>`;
   document.body.appendChild(modal);
+
+  // Close when the user clicks the dimmed backdrop, but not when clicking inside the profile card.
+  modal.addEventListener('click', (event)=>{
+    if(event.target===modal) closeParticipantProfile();
+  });
+
   return modal;
 }
 
 function closeParticipantProfile(){
   const m=document.getElementById('participant-profile-modal');
   if(m) m.classList.add('hidden');
+}
+
+if(!window.__ahDirectoryEscapeBound){
+  window.__ahDirectoryEscapeBound=true;
+  document.addEventListener('keydown',(event)=>{
+    if(event.key==='Escape'){
+      const modal=document.getElementById('participant-profile-modal');
+      if(modal && !modal.classList.contains('hidden')) closeParticipantProfile();
+    }
+  });
 }
 
 function ahDirectoryValue(v){
