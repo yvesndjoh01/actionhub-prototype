@@ -1,3 +1,4 @@
+// ACTIONHUB LOGIN FIX V3 - 2026-08-21
 // ACTIONHUB LOGIN FIX V2 - 2026-08-21
 const CFG=window.ACTIONHUB_CONFIG||{};
 const hasSupabase=Boolean(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY&&window.supabase);
@@ -181,3 +182,119 @@ function renderAll(){hydrate();applyLanguage();renderUser();updateMode();renderD
 
 // Replace the basic language handler with translation-aware behavior.
 document.getElementById("language").onchange=async e=>{state.lang=e.target.value;ahShowOriginalContent=false;ahTranslationError="";saveLocal();renderAll();if(state.lang!=="en"&&currentSessionUser)await ahEnsureTranslations();};
+
+
+// ACTIONHUB LOGIN FIX V3 - resilient authenticated workspace rendering
+function ahSafeRenderStep(label, fn){
+  try { return fn(); }
+  catch (e) { console.error(`ActionHub render step failed: ${label}`, e); return null; }
+}
+
+function renderAll(){
+  ahSafeRenderStep('hydrate', ()=>hydrate());
+  ahSafeRenderStep('language', ()=>applyLanguage());
+  ahSafeRenderStep('user', ()=>renderUser());
+  ahSafeRenderStep('mode', ()=>updateMode());
+  ahSafeRenderStep('dashboard', ()=>renderDashboard());
+  ahSafeRenderStep('plans', ()=>renderPlans(sharedPlans));
+  ahSafeRenderStep('milestones', ()=>renderMilestones());
+  ahSafeRenderStep('evidence', ()=>renderEvidence());
+  ahSafeRenderStep('translation bar', ()=>ahEnsureTranslationBar());
+  if(currentSessionUser && state.user && ['coordinator','admin'].includes(state.user.role)) {
+    Promise.resolve(renderCoordinator()).catch(e=>console.error('ActionHub coordinator render:', e));
+  }
+  ahSafeRenderStep('translation schedule', ()=>ahScheduleTranslations());
+}
+
+async function syncSession(session){
+  currentSessionUser=session?.user||null;
+  if(!currentSessionUser){
+    state.user=null;
+    state.plan={...blankPlan};
+    state.milestones=defaultMilestones.map(x=>({...x}));
+    state.evidence=[];
+    sharedPlans=[];
+    renderAll();
+    return;
+  }
+
+  const meta=currentSessionUser.user_metadata||{};
+  let profile=null;
+  try{
+    const result=await sb.from('profiles')
+      .select('id,full_name,country,role,organization,bio')
+      .eq('id',currentSessionUser.id)
+      .single();
+    if(result.error) console.warn('ActionHub profile load:', result.error);
+    else profile=result.data;
+  }catch(e){
+    console.warn('ActionHub profile request failed:',e);
+  }
+
+  state.user={
+    name:profile?.full_name||meta.full_name||'Participant',
+    country:normalizeCountry(profile?.country||meta.country||''),
+    role:profile?.role||'participant',
+    organization:profile?.organization||''
+  };
+
+  // Update identity immediately, before loading the rest of the workspace.
+  ahSafeRenderStep('authenticated user', ()=>renderUser());
+
+  try{ await loadOwnWorkspace(); }
+  catch(e){ console.error('ActionHub own workspace load:',e); }
+
+  try{ await loadSharedPlans(false); }
+  catch(e){ console.error('ActionHub cohort load:',e); }
+
+  renderAll();
+}
+
+async function realLogin(){
+  if(!hasSupabase) return alert('Supabase is not configured yet.');
+  const email=document.getElementById('login-email').value.trim();
+  const password=document.getElementById('login-password').value;
+  if(!email||!password) return alert('Enter email and password.');
+
+  const button=document.querySelector('#login-modal button[onclick="realLogin()"]');
+  const oldText=button?.textContent;
+  if(button){ button.disabled=true; button.textContent=state.lang==='fr'?'Connexion…':state.lang==='ko'?'로그인 중…':'Signing in…'; }
+
+  try{
+    const {data,error}=await sb.auth.signInWithPassword({email,password});
+    if(error) return alert(error.message);
+
+    closeLogin();
+    currentSessionUser=data.user||data.session?.user||null;
+    if(currentSessionUser){
+      const meta=currentSessionUser.user_metadata||{};
+      state.user={
+        name:meta.full_name||'Participant',
+        country:normalizeCountry(meta.country||''),
+        role:'participant',
+        organization:''
+      };
+      renderAll();
+    }
+
+    // Load database-backed workspace without allowing a secondary render error
+    // to make a successful sign-in look like a failed sign-in.
+    await syncSession(data.session);
+  }catch(e){
+    console.error('ActionHub sign-in post-processing:',e);
+    // Authentication may already have succeeded. Recover from the stored session.
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      if(session){
+        closeLogin();
+        await syncSession(session);
+        return;
+      }
+    }catch(recoveryError){
+      console.error('ActionHub session recovery:',recoveryError);
+    }
+    alert(state.lang==='fr'?'Impossible de terminer la connexion. Veuillez réessayer.':state.lang==='ko'?'로그인을 완료할 수 없습니다. 다시 시도해 주세요.':'Unable to finish signing in. Please try again.');
+  }finally{
+    if(button){ button.disabled=false; button.textContent=oldText||((T[state.lang]||T.en).realLogin); }
+  }
+}
