@@ -1,0 +1,73 @@
+/* ACTIONHUB ACCESS GATE V1 - 2026-08-21
+   Fail-closed: the internal application stays hidden until Supabase confirms a session. */
+body:not(.ah-authenticated) .app{display:none!important}
+body.ah-guest{margin:0;background:#f4f7fa;color:#0a2742;min-height:100vh}
+body.ah-guest .modal{z-index:1100}
+
+.ah-access-gate{min-height:100vh;background:#f4f7fa;display:flex;flex-direction:column;font-family:inherit;color:#0a2742}
+.ah-access-gate *{box-sizing:border-box}
+.ah-access-topbar{min-height:92px;background:#fff;border-bottom:1px solid #dce5ed;display:flex;align-items:center;justify-content:space-between;padding:18px clamp(24px,5vw,72px);gap:24px}
+.ah-access-brand{display:flex;align-items:center;gap:14px;min-width:0}
+.ah-access-brand img{width:54px;height:54px;display:block}
+.ah-access-brand-copy{display:flex;flex-direction:column;gap:3px}
+.ah-access-brand-copy strong{font-size:27px;line-height:1;color:#092e50;letter-spacing:-.025em}
+.ah-access-brand-copy strong em{font-style:normal;color:#0067b9}
+.ah-access-brand-copy small{font-size:12px;color:#61788c;letter-spacing:.015em}
+.ah-access-lang{display:flex;align-items:center;gap:10px;color:#566e82;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.ah-access-lang select{height:42px;border:1px solid #b8c7d4;background:#fff;color:#0a2742;padding:0 34px 0 12px;font:inherit;font-size:13px;text-transform:none;letter-spacing:0}
+
+.ah-access-main{flex:1;display:grid;grid-template-columns:minmax(0,1.18fr) minmax(360px,.82fr);max-width:1440px;width:100%;margin:0 auto;padding:clamp(34px,5vw,74px) clamp(24px,5vw,72px);gap:0}
+.ah-access-hero{position:relative;overflow:hidden;background:linear-gradient(118deg,#07528f 0%,#0069bd 62%,#0878c8 100%);min-height:610px;padding:clamp(44px,6vw,86px);display:flex;flex-direction:column;justify-content:center;color:#fff}
+.ah-access-hero:after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.10) 1px,transparent 0);background-size:26px 26px;mask-image:linear-gradient(to left,black,transparent 75%);pointer-events:none}
+.ah-access-eyebrow{position:relative;z-index:1;color:#9fe0ff;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;margin-bottom:24px}
+.ah-access-hero h1{position:relative;z-index:1;margin:0;max-width:780px;font-size:clamp(46px,5.5vw,78px);line-height:.98;letter-spacing:-.045em;font-weight:800}
+.ah-access-hero p{position:relative;z-index:1;max-width:720px;margin:28px 0 0;font-size:clamp(17px,1.6vw,22px);line-height:1.55;color:#e8f5ff}
+.ah-access-actions{position:relative;z-index:1;display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}
+.ah-access-btn{border:1px solid transparent;min-height:52px;padding:0 22px;font:inherit;font-weight:800;font-size:14px;cursor:pointer;transition:.18s ease}
+.ah-access-btn.primary{background:#fff;color:#0b4e84}
+.ah-access-btn.primary:hover{background:#eef8ff}
+.ah-access-btn.secondary{background:transparent;border-color:rgba(255,255,255,.55);color:#fff}
+.ah-access-btn.secondary:hover{background:rgba(255,255,255,.08)}
+.ah-access-privacy{position:relative;z-index:1;display:flex;align-items:flex-start;gap:10px;margin-top:26px;font-size:12px;line-height:1.5;color:#c9e8fb;max-width:690px}
+.ah-access-lock{width:18px;height:18px;border:1.5px solid #9fe0ff;border-radius:50%;display:grid;place-items:center;flex:0 0 18px;font-size:9px;font-weight:900}
+
+.ah-access-side{background:#07355f;color:#fff;min-height:610px;padding:clamp(36px,4vw,58px);display:flex;flex-direction:column}
+.ah-access-side-kicker{font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#72cdf8}
+.ah-access-side h2{font-size:30px;line-height:1.12;margin:12px 0 28px;letter-spacing:-.02em}
+.ah-access-flow{border-top:1px solid rgba(255,255,255,.18)}
+.ah-access-flow-item{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:22px 0;border-bottom:1px solid rgba(255,255,255,.14)}
+.ah-access-flow-item span{color:#6fd2ff;font-size:12px;font-weight:900;padding-top:3px}
+.ah-access-flow-item b{display:block;font-size:15px;margin-bottom:5px}
+.ah-access-flow-item p{margin:0;color:#bcd3e5;font-size:12px;line-height:1.5}
+.ah-access-countries{margin-top:auto;padding-top:34px}
+.ah-access-countries-label{font-size:10px;font-weight:900;letter-spacing:.13em;color:#79cff4;text-transform:uppercase;margin-bottom:12px}
+.ah-access-flags{display:flex;gap:9px;flex-wrap:wrap}
+.ah-access-flag{display:flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,.15);padding:7px 9px;font-size:10px;color:#dceaf5}
+.ah-access-flag img{width:24px;height:16px;object-fit:cover}
+
+.ah-access-footer{max-width:1440px;width:100%;margin:0 auto;padding:0 clamp(24px,5vw,72px) 28px;display:flex;justify-content:space-between;gap:20px;color:#62798d;font-size:11px;line-height:1.5}
+.ah-access-footer strong{color:#21435f}
+
+.ah-auth-switch{margin-top:12px;background:none;border:0;color:#0b5ea8;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px;padding:4px 0}
+
+@media(max-width:980px){
+  .ah-access-main{grid-template-columns:1fr;padding-top:28px;padding-bottom:28px}
+  .ah-access-hero,.ah-access-side{min-height:auto}
+  .ah-access-side{padding-top:38px}
+  .ah-access-countries{margin-top:28px}
+}
+@media(max-width:640px){
+  .ah-access-topbar{padding:14px 18px;align-items:flex-start}
+  .ah-access-brand img{width:45px;height:45px}
+  .ah-access-brand-copy strong{font-size:22px}
+  .ah-access-brand-copy small{max-width:205px}
+  .ah-access-lang{flex-direction:column;align-items:flex-end;gap:4px}
+  .ah-access-lang span{display:none}
+  .ah-access-main{padding:18px}
+  .ah-access-hero{padding:44px 26px}
+  .ah-access-hero h1{font-size:45px}
+  .ah-access-side{padding:34px 26px}
+  .ah-access-actions{flex-direction:column}
+  .ah-access-btn{width:100%}
+  .ah-access-footer{padding:0 18px 22px;flex-direction:column}
+}
