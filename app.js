@@ -298,3 +298,208 @@ async function realLogin(){
     if(button){ button.disabled=false; button.textContent=oldText||((T[state.lang]||T.en).realLogin); }
   }
 }
+
+// ACTIONHUB PILOT FIX V4 - participant SDGs + real collaboration requests
+let ahCollaborationStatusByPlan=new Map();
+let ahCollaborationTargetPlanId=null;
+
+function ahFormatSdgs(raw){
+  const value=String(raw||'').trim();
+  if(!value)return '—';
+  const parts=value
+    .replace(/\bSDGs?\s*/gi,'')
+    .split(/[;,|·\s]+/)
+    .map(x=>x.trim())
+    .filter(Boolean);
+  return parts.length?[...new Set(parts)].join(' · '):'—';
+}
+
+async function ahLoadOutgoingCollaborations(){
+  ahCollaborationStatusByPlan=new Map();
+  if(!currentSessionUser)return;
+  try{
+    const {data,error}=await sb.from('collaboration_interests')
+      .select('to_action_plan_id,status')
+      .eq('from_user_id',currentSessionUser.id);
+    if(error){console.warn('ActionHub collaboration status:',error);return;}
+    (data||[]).forEach(row=>ahCollaborationStatusByPlan.set(row.to_action_plan_id,row.status));
+  }catch(e){console.warn('ActionHub collaboration status request:',e);}
+}
+
+function ahEnsureCollaborationModal(){
+  let modal=document.getElementById('collaboration-modal');
+  if(modal)return modal;
+  modal=document.createElement('div');
+  modal.id='collaboration-modal';
+  modal.className='modal hidden';
+  modal.innerHTML=`<div class="modal-card">
+    <button class="modal-close" type="button" onclick="closeCollaborationRequest()">×</button>
+    <div class="section-kicker" id="collab-kicker">COLLABORATION REQUEST</div>
+    <h2 id="collab-title">Connect with a fellow</h2>
+    <p id="collab-context"></p>
+    <div class="form-stack">
+      <label><span id="collab-message-label">Short message</span><textarea id="collab-message" maxlength="600" placeholder="Introduce what you would like to explore together."></textarea></label>
+      <button id="collab-send" class="btn solid" type="button" onclick="sendCollaborationRequest()">Send collaboration request</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function openCollaborationRequest(planId){
+  if(!currentSessionUser){openLogin();return;}
+  const plan=sharedPlans.find(x=>x.id===planId);
+  if(!plan)return;
+  if(plan.ownerId===currentSessionUser.id)return;
+  const existing=ahCollaborationStatusByPlan.get(planId);
+  if(existing&&existing!=='declined'&&existing!=='closed'){
+    alert(state.lang==='fr'?"Une demande de collaboration existe déjà pour ce projet.":state.lang==='ko'?"이 프로젝트에 대한 협업 요청이 이미 있습니다.":"You already have a collaboration request for this project.");
+    return;
+  }
+  ahCollaborationTargetPlanId=planId;
+  const modal=ahEnsureCollaborationModal();
+  const title=document.getElementById('collab-title');
+  const context=document.getElementById('collab-context');
+  const label=document.getElementById('collab-message-label');
+  const send=document.getElementById('collab-send');
+  const textarea=document.getElementById('collab-message');
+  if(state.lang==='fr'){
+    title.textContent=`Se connecter avec ${plan.name}`;
+    context.textContent=`Projet : ${plan.title}. Envoyez un court message expliquant ce que vous souhaitez explorer ensemble.`;
+    label.textContent='Court message';
+    textarea.placeholder='Présentez brièvement la collaboration que vous souhaitez explorer.';
+    send.textContent='Envoyer la demande de collaboration';
+  }else if(state.lang==='ko'){
+    title.textContent=`${plan.name} 님과 연결`;
+    context.textContent=`프로젝트: ${plan.title}. 함께 논의하고 싶은 내용을 짧게 작성하세요.`;
+    label.textContent='짧은 메시지';
+    textarea.placeholder='함께 탐색하고 싶은 협업 내용을 간단히 소개하세요.';
+    send.textContent='협업 요청 보내기';
+  }else{
+    title.textContent=`Connect with ${plan.name}`;
+    context.textContent=`Project: ${plan.title}. Send a short message explaining what you would like to explore together.`;
+    label.textContent='Short message';
+    textarea.placeholder='Introduce what you would like to explore together.';
+    send.textContent='Send collaboration request';
+  }
+  textarea.value='';
+  modal.classList.remove('hidden');
+  setTimeout(()=>textarea.focus(),20);
+}
+
+function closeCollaborationRequest(){
+  const modal=document.getElementById('collaboration-modal');
+  if(modal)modal.classList.add('hidden');
+  ahCollaborationTargetPlanId=null;
+}
+
+async function sendCollaborationRequest(){
+  if(!currentSessionUser||!ahCollaborationTargetPlanId)return;
+  const message=document.getElementById('collab-message')?.value.trim()||'';
+  if(!message){
+    alert(state.lang==='fr'?"Ajoutez un court message à votre demande.":state.lang==='ko'?"요청에 짧은 메시지를 작성해 주세요.":"Add a short message to your request.");
+    return;
+  }
+  const plan=sharedPlans.find(x=>x.id===ahCollaborationTargetPlanId);
+  if(!plan||plan.ownerId===currentSessionUser.id)return;
+  const button=document.getElementById('collab-send');
+  const oldText=button?.textContent;
+  if(button){button.disabled=true;button.textContent=state.lang==='fr'?'Envoi…':state.lang==='ko'?'전송 중…':'Sending…';}
+  try{
+    const {error}=await sb.from('collaboration_interests').insert({
+      from_user_id:currentSessionUser.id,
+      to_action_plan_id:ahCollaborationTargetPlanId,
+      message,
+      status:'new'
+    });
+    if(error){
+      if(error.code==='23505'){
+        ahCollaborationStatusByPlan.set(ahCollaborationTargetPlanId,'new');
+        closeCollaborationRequest();
+        renderPlans(sharedPlans);
+        alert(state.lang==='fr'?"Votre demande existe déjà.":state.lang==='ko'?"이미 요청을 보냈습니다.":"You already sent a request to this project.");
+        return;
+      }
+      throw error;
+    }
+    ahCollaborationStatusByPlan.set(ahCollaborationTargetPlanId,'new');
+    closeCollaborationRequest();
+    renderPlans(sharedPlans);
+    alert(state.lang==='fr'?`Demande de collaboration envoyée à ${plan.name}.`:state.lang==='ko'?`${plan.name} 님에게 협업 요청을 보냈습니다.`:`Collaboration request sent to ${plan.name}.`);
+  }catch(e){
+    console.error('ActionHub collaboration request:',e);
+    alert(state.lang==='fr'?"La demande n'a pas pu être envoyée. Réessayez.":state.lang==='ko'?"협업 요청을 보내지 못했습니다. 다시 시도해 주세요.":"The collaboration request could not be sent. Please try again.");
+  }finally{
+    if(button){button.disabled=false;button.textContent=oldText||'Send collaboration request';}
+  }
+}
+
+async function loadSharedPlans(render=true){
+  if(!currentSessionUser){sharedPlans=[];ahCollaborationStatusByPlan=new Map();if(render)renderPlans([]);return;}
+  const {data,error}=await sb.from('action_plans')
+    .select('id,user_id,title,country,sector,stage,solution,progress,profiles(full_name,country,organization)')
+    .eq('visibility','cohort')
+    .order('updated_at',{ascending:false})
+    .limit(100);
+  if(error){console.warn(error);sharedPlans=[];}
+  else sharedPlans=(data||[]).map(x=>({
+    id:x.id,
+    ownerId:x.user_id,
+    name:x.profiles?.full_name||'Participant',
+    country:normalizeCountry(x.country||x.profiles?.country),
+    sector:x.sector||'',
+    title:x.title||'Untitled Action Plan',
+    desc:x.solution||'',
+    progress:x.progress||0,
+    stage:x.stage||''
+  }));
+  await ahLoadOutgoingCollaborations();
+  if(render)renderPlans(sharedPlans);
+  const active=document.querySelector('.pulse-grid > div:first-child strong');
+  if(active)active.textContent=sharedPlans.length;
+  renderRail();
+}
+
+function ahConnectButton(plan){
+  if(!currentSessionUser)return '';
+  if(plan.ownerId===currentSessionUser.id){
+    const text=state.lang==='fr'?'MON PLAN':state.lang==='ko'?'내 계획':'MY PLAN';
+    return `<button class="connect-btn" type="button" disabled style="opacity:.55;cursor:default">${text}</button>`;
+  }
+  const status=ahCollaborationStatusByPlan.get(plan.id);
+  if(status==='new'){
+    const text=state.lang==='fr'?'DEMANDÉ':state.lang==='ko'?'요청됨':'REQUESTED';
+    return `<button class="connect-btn" type="button" disabled style="opacity:.7;cursor:default">${text}</button>`;
+  }
+  if(status==='accepted'){
+    const text=state.lang==='fr'?'CONNECTÉ':state.lang==='ko'?'연결됨':'CONNECTED';
+    return `<button class="connect-btn" type="button" disabled style="opacity:.7;cursor:default">${text}</button>`;
+  }
+  const text=state.lang==='fr'?'SE CONNECTER':state.lang==='ko'?'연결':'CONNECT';
+  return `<button class="connect-btn" type="button" onclick="openCollaborationRequest('${plan.id}')">${text}</button>`;
+}
+
+function renderPlans(arr=sharedPlans){
+  const sector=document.getElementById('sector-filter').value;
+  const q=document.getElementById('project-search').value.trim().toLowerCase();
+  const f=(arr||[]).filter(x=>(selectedCountry==='all'||normalizeCountry(x.country)===selectedCountry)&&(sector==='all'||x.sector===sector)&&(!q||`${x.title} ${x.name} ${x.desc} ${x.country} ${x.sector}`.toLowerCase().includes(q)));
+  document.getElementById('plans-list').innerHTML=f.map(x=>`<div class="project-row"><div class="project-main"><h3>${esc(x.title)}</h3><p>${esc(ahTranslated(x.desc||''))}</p>${ahTranslationMark(x.desc)}</div><div class="project-person">${esc(x.name)}</div><div class="project-country">${flag(x.country)}${esc(ahCountryLabel(x.country))}</div><div><span class="sector-tag">${esc(ahTranslated(x.sector||''))}</span></div><div class="project-progress">${Number(x.progress||0)}%</div>${ahConnectButton(x)}</div>`).join('')||`<div class="project-row"><div class="project-main"><h3>${state.lang==='fr'?'Aucun projet correspondant':state.lang==='ko'?'일치하는 프로젝트가 없습니다':'No matching projects'}</h3><p>${state.lang==='fr'?'Les projets visibles par la cohorte apparaîtront ici.':state.lang==='ko'?'코호트 공개 프로젝트가 여기에 표시됩니다.':'Saved cohort-visible projects will appear here.'}</p></div></div>`;
+}
+
+function renderDashboard(){
+  const signed=Boolean(currentSessionUser&&state.user),p=signed?calcProgress():0;
+  const solution=signed?(state.plan.solution||''):'';
+  document.getElementById('dash-project').textContent=signed?(state.plan.projectTitle||'No Action Plan yet'):(state.lang==='fr'?"Connectez-vous pour voir votre plan":state.lang==='ko'?'실행계획을 보려면 로그인하세요':'Sign in to view your Action Plan');
+  document.getElementById('dash-solution').innerHTML=signed?(solution?`${esc(ahTranslated(solution))}${ahTranslationMark(solution)}`:(state.lang==='fr'?"Commencez votre plan d'action pour définir le changement que vous souhaitez mettre en œuvre.":state.lang==='ko'?'실행하려는 변화를 정의하려면 실행계획을 시작하세요.':'Start your Action Plan to define the change you want to implement.')):(state.lang==='fr'?"Votre plan personnel, vos jalons et vos preuves apparaissent uniquement après connexion.":state.lang==='ko'?'개인 실행계획, 마일스톤 및 증거는 로그인 후에만 표시됩니다.':'Your personal Action Plan, milestones and evidence appear only after you sign in.');
+  document.getElementById('dash-progress').style.width=p+'%';
+  document.getElementById('progress-number').textContent=p+'%';
+  document.getElementById('mission-score-value').textContent=p+'%';
+  const next=signed?(state.milestones.find(m=>!m.done)||{title:'Completed'}).title:'';
+  document.getElementById('dash-next').textContent=signed?ahTranslated(next):(state.lang==='fr'?'Se connecter':state.lang==='ko'?'로그인':'Sign in');
+  document.getElementById('dash-country').innerHTML=signed&&state.plan.country?`<span class="country-inline">${flag(state.plan.country)} ${esc(ahCountryLabel(state.plan.country))}</span>`:'—';
+  const sdgEl=document.querySelector('.mission-footer > div:nth-child(3) b');
+  if(sdgEl)sdgEl.textContent=signed?ahFormatSdgs(state.plan.sdgs):'—';
+  document.getElementById('stat-milestones').textContent=signed?state.milestones.filter(m=>m.done).length:0;
+  document.getElementById('stat-evidence').textContent=signed?state.evidence.length:0;
+  renderRail();
+}
