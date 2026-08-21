@@ -234,3 +234,171 @@ if(ahProfileLanguage){ahProfileLanguage.addEventListener('change',()=>{if(!docum
     try{const {data:{session}}=await sb.auth.getSession();if(session?.user){currentSessionUser=session.user;await ahLoadProfileData();}}catch(e){console.warn('ActionHub profile init:',e);}
   }
 })();
+
+// ACTIONHUB PARTICIPANT PROFILE V2 - live validation + instant photo preview
+let ahProfileLocalPreviewUrl='';
+
+function ahProfileRequiredValuesFromForm(){
+  return {
+    city: ahProfileField('ah-profile-city')?.value.trim()||'',
+    professional_title: ahProfileField('ah-profile-job')?.value.trim()||'',
+    focus_area: ahProfileField('ah-profile-focus')?.value.trim()||'',
+    bio: ahProfileField('ah-profile-bio')?.value.trim()||''
+  };
+}
+
+function ahProfileLiveCompletion(){
+  const values=ahProfileRequiredValuesFromForm();
+  const total=Object.keys(values).length;
+  const done=Object.values(values).filter(Boolean).length;
+  return Math.round(done/total*100);
+}
+
+function ahUpdateProfileCompletion(){
+  const el=ahProfileField('ah-profile-completion');
+  if(el)el.innerHTML=`<b>${ahProfileLiveCompletion()}%</b> profile`;
+}
+
+function ahClearProfileValidation(){
+  ['ah-profile-city','ah-profile-job','ah-profile-focus','ah-profile-bio'].forEach(id=>{
+    const el=ahProfileField(id);
+    if(el){el.classList.remove('ah-profile-missing');el.removeAttribute('aria-invalid');}
+  });
+}
+
+function ahMarkMissingProfileFields(){
+  ahClearProfileValidation();
+  const fields={
+    city:'ah-profile-city',
+    professional_title:'ah-profile-job',
+    focus_area:'ah-profile-focus',
+    bio:'ah-profile-bio'
+  };
+  const values=ahProfileRequiredValuesFromForm();
+  const missing=[];
+  Object.entries(fields).forEach(([key,id])=>{
+    if(!values[key]){
+      missing.push(id);
+      const el=ahProfileField(id);
+      if(el){el.classList.add('ah-profile-missing');el.setAttribute('aria-invalid','true');}
+    }
+  });
+  if(missing.length){
+    const first=ahProfileField(missing[0]);
+    if(first){first.focus();first.scrollIntoView({behavior:'smooth',block:'center'});}
+  }
+  return missing.length;
+}
+
+function ahPreviewSelectedPhoto(file){
+  const preview=ahProfileField('ah-profile-photo-preview');
+  const hint=ahProfileField('ah-profile-photo-hint');
+  const c=ahP();
+  if(!preview)return;
+  if(!file){
+    if(ahProfileLocalPreviewUrl){URL.revokeObjectURL(ahProfileLocalPreviewUrl);ahProfileLocalPreviewUrl='';}
+    preview.innerHTML=ahProfileAvatarUrl?`<img src="${esc(ahProfileAvatarUrl)}" alt="">`:esc(initials(state?.user?.name||'Participant'));
+    if(hint)hint.textContent=c.photoHint;
+    return;
+  }
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){
+    ahProfileField('ah-profile-photo').value='';
+    alert(c.badPhoto);
+    ahPreviewSelectedPhoto(null);
+    return;
+  }
+  if(ahProfileLocalPreviewUrl)URL.revokeObjectURL(ahProfileLocalPreviewUrl);
+  ahProfileLocalPreviewUrl=URL.createObjectURL(file);
+  preview.innerHTML=`<img src="${esc(ahProfileLocalPreviewUrl)}" alt="${esc(state?.user?.name||'Participant')}">`;
+  if(hint)hint.textContent=state?.lang==='fr'?"Photo sélectionnée — elle sera importée lorsque vous enregistrerez le profil.":state?.lang==='ko'?"사진 선택됨 — 프로필을 저장할 때 업로드됩니다.":"Photo selected — it will upload when you save the profile.";
+}
+
+function ahBindProfileV2Events(){
+  ahAddProfileStyles();
+  const style=document.getElementById('ah-profile-styles');
+  if(style&&!style.textContent.includes('.ah-profile-missing')){
+    style.textContent+=`.ah-profile-grid .ah-profile-missing{border-color:#b42318!important;box-shadow:0 0 0 2px rgba(180,35,24,.08);background:#fff8f7}.ah-profile-grid .ah-profile-missing:focus{outline:2px solid rgba(180,35,24,.18);outline-offset:1px}`;
+  }
+  ['ah-profile-city','ah-profile-job','ah-profile-focus','ah-profile-bio'].forEach(id=>{
+    const el=ahProfileField(id);
+    if(el&&!el.dataset.ahProfileV2Bound){
+      el.dataset.ahProfileV2Bound='1';
+      el.addEventListener('input',()=>{el.classList.remove('ah-profile-missing');el.removeAttribute('aria-invalid');ahUpdateProfileCompletion();});
+    }
+  });
+  const photo=ahProfileField('ah-profile-photo');
+  if(photo&&!photo.dataset.ahProfileV2Bound){
+    photo.dataset.ahProfileV2Bound='1';
+    photo.addEventListener('change',()=>ahPreviewSelectedPhoto(photo.files?.[0]||null));
+  }
+  ahUpdateProfileCompletion();
+}
+
+const ahProfileBaseRenderModalV1=ahRenderProfileModal;
+ahRenderProfileModal=function(){
+  const modal=ahProfileBaseRenderModalV1();
+  setTimeout(()=>{ahBindProfileV2Events();ahUpdateProfileCompletion();},0);
+  return modal;
+};
+
+const ahProfileBaseOpenProfileV1=openProfile;
+openProfile=function(){
+  const result=ahProfileBaseOpenProfileV1();
+  setTimeout(()=>{ahBindProfileV2Events();ahUpdateProfileCompletion();},0);
+  return result;
+};
+
+saveProfile=async function(){
+  if(!currentSessionUser)return;
+  const c=ahP();
+  const city=ahProfileField('ah-profile-city').value.trim();
+  const organization=ahProfileField('ah-profile-org').value.trim();
+  const professional_title=ahProfileField('ah-profile-job').value.trim();
+  const focus_area=ahProfileField('ah-profile-focus').value.trim();
+  const languages=ahProfileField('ah-profile-langs').value.trim();
+  const interests=ahProfileField('ah-profile-interests').value.trim();
+  const linkedin_url=ahProfileField('ah-profile-linkedin').value.trim();
+  const bio=ahProfileField('ah-profile-bio').value.trim();
+  const date_of_birth=ahProfileField('ah-profile-dob').value||null;
+
+  if(ahMarkMissingProfileFields()){
+    alert(c.required);
+    ahUpdateProfileCompletion();
+    return;
+  }
+  if(linkedin_url&&(!linkedin_url.startsWith('https://')||!linkedin_url.toLowerCase().includes('linkedin.com/'))){
+    ahProfileField('ah-profile-linkedin')?.focus();
+    alert(c.badLinkedin);
+    return;
+  }
+
+  const save=ahProfileField('ah-profile-save'),oldText=save.textContent;
+  save.disabled=true;save.textContent=c.saving;
+  try{
+    const file=ahProfileField('ah-profile-photo').files[0];
+    const avatar_path=await ahUploadAvatar(file);
+    const {error}=await sb.from('profiles').update({organization,professional_title,city,focus_area,interests,languages,linkedin_url,bio,avatar_path,profile_completed:true,updated_at:new Date().toISOString()}).eq('id',currentSessionUser.id);
+    if(error)throw error;
+    const {error:privateError}=await sb.from('profile_private').upsert({user_id:currentSessionUser.id,date_of_birth,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    if(privateError)throw privateError;
+
+    ahProfileData={...ahProfileData,organization,professional_title,city,focus_area,interests,languages,linkedin_url,bio,avatar_path,profile_completed:true,date_of_birth:date_of_birth||''};
+    if(avatar_path){
+      const {data:signed,error:signedError}=await sb.storage.from('avatars').createSignedUrl(avatar_path,3600);
+      if(signedError)console.warn('ActionHub avatar signed URL:',signedError);
+      else ahProfileAvatarUrl=signed?.signedUrl||ahProfileAvatarUrl;
+    }
+    if(state?.user)state.user.organization=organization;
+    if(ahProfileLocalPreviewUrl){URL.revokeObjectURL(ahProfileLocalPreviewUrl);ahProfileLocalPreviewUrl='';}
+    ahApplyProfileToHeader();
+    closeProfile();
+    alert(c.saved);
+  }catch(e){
+    console.error('ActionHub save profile:',e);
+    alert(e?.message||c.saveFail);
+  }finally{
+    save.disabled=false;save.textContent=oldText||c.save;
+  }
+};
+
+setTimeout(()=>ahBindProfileV2Events(),0);
